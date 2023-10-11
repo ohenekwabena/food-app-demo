@@ -1,11 +1,34 @@
 import styled, { keyframes } from "styled-components";
 import { DialogContent, DialogOverlay } from "@reach/dialog";
+import { useContext } from "react";
+import CartContext from "../../store/cart-context";
+import CartItem from "./CartItem";
 
 const Cart = ({ onClose }) => {
+  const cartCtx = useContext(CartContext);
+
+  const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
+  const hasItems = cartCtx.items.length > 0;
+
+  const cartItemRemoveHandler = (id) => {
+    cartCtx.removeItem(id);
+  };
+
+  const cartItemAddHandler = (item) => {
+    cartCtx.addItem({ ...item, amount: 1 });
+  };
+
   const cartItems = (
     <CartItems>
-      {[{ id: "c1", name: "Sushi", amount: 2, price: 12.99 }].map((item) => (
-        <li>{item.name}</li>
+      {cartCtx.items.map((item) => (
+        <CartItem
+          key={item.id}
+          name={item.name}
+          amount={item.amount}
+          price={item.price}
+          onAdd={cartItemAddHandler.bind(null, item)}
+          onRemove={cartItemRemoveHandler.bind(null, item.id)}
+        />
       ))}
     </CartItems>
   );
@@ -16,11 +39,11 @@ const Cart = ({ onClose }) => {
         {cartItems}
         <AmountTotal>
           <span>Total Amount</span>
-          <span>35.62</span>
+          <span>{totalAmount}</span>
         </AmountTotal>
         <Actions>
           <AltButton onClick={onClose}>Close</AltButton>
-          <OrderButton>Order</OrderButton>
+          {hasItems && <OrderButton>Order</OrderButton>}
         </Actions>
       </Content>
     </Wrapper>
@@ -71,7 +94,7 @@ const CartItems = styled.ul`
   margin: 0;
   padding: 0;
   max-height: 20rem;
-  overflow: auto;
+  overflow-y: auto;
 `;
 
 const AmountTotal = styled.div`

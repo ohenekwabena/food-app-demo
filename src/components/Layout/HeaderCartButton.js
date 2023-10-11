@@ -1,17 +1,35 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import CartIcon from "../Cart/CartIcon";
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import CartContext from "../../store/cart-context";
 
 const HeaderCardButton = ({ onClick }) => {
-  const cartCtx = useContext(CartContext);
+  const [btnAnimate, setBtnAnimate] = useState(false);
 
-  const numOfCartItems = cartCtx.items.reduce((curNumber, item) => {
+  const cartCtx = useContext(CartContext);
+  const { items } = cartCtx;
+
+  const numOfCartItems = items.reduce((curNumber, item) => {
     return curNumber + item.amount;
   }, 0);
 
+  useEffect(() => {
+    if (items.length === 0) {
+      return;
+    }
+    setBtnAnimate(true);
+
+    const timer = setTimeout(() => {
+      setBtnAnimate(false);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [items]);
+
   return (
-    <Button onClick={onClick}>
+    <Button onClick={onClick} animate={btnAnimate}>
       <Icon>
         <CartIcon />
       </Icon>
@@ -20,6 +38,24 @@ const HeaderCardButton = ({ onClick }) => {
     </Button>
   );
 };
+
+const Bump = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(0.9);
+  }
+  30% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
 
 const Button = styled.button`
   cursor: pointer;
@@ -33,6 +69,11 @@ const Button = styled.button`
   align-items: center;
   border-radius: 25px;
   font-weight: bold;
+  ${(props) =>
+    props.animate &&
+    css`
+      animation: ${Bump} 300ms ease-out;
+    `}
 
   &:hover,
   &:active {
@@ -57,26 +98,5 @@ const Badge = styled.span`
     background-color: #92320c;
   }
 `;
-
-// .bump {
-//   animation: bump 300ms ease-out;
-// }
-
-// @keyframes bump {
-//   0% {
-//     transform: scale(1);
-//   }
-//   10% {
-//     transform: scale(0.9);
-//   }
-//   30% {
-//     transform: scale(1.1);
-//   }
-//   50% {
-//     transform: scale(1.15);
-//   }
-//   100% {
-//     transform: scale(1);
-//   }
 
 export default HeaderCardButton;
